@@ -34,16 +34,19 @@ macro (add_module module_name module_path)
 
 			project (${module_name})
 
+			set ( header_files_name "${module_name}_header_files")
+			set ( source_files_name "${module_name}_source_files")
+
 			set ( include_path ${module_path}/include )
 			set ( source_path ${module_path}/src )
 
 			if (EXISTS ${include_path})
 				include_directories ( ${include_path} )
-				glob_code ( ${include_path} header_files )
+				glob_code ( ${include_path} ${header_files_name} )
 			endif ()
 
 			if (EXISTS ${source_path})
-				glob_code ( ${source_path} source_files )
+				glob_code ( ${source_path} ${source_files_name})
 			endif ()
 
 			set ( module_succeded TRUE )
@@ -86,8 +89,8 @@ macro (add_static_module module_name module_path)
 	add_module ( ${module_name} ${module_path} ${ARGN})
 
 	if (${module_succeded})
-		add_library ( ${module_name} STATIC ${source_files} ${header_files} )
 		eval_cmakelists (${module_path})
+		add_library ( ${module_name} STATIC ${${module_name}_source_files} ${${module_name}_header_files} )
 		add_module_deps (${module_name})
 	endif ()
 
@@ -98,8 +101,8 @@ macro (add_shared_module module_name module_path)
 	add_module ( ${module_name} ${module_path} ${ARGN})
 
 	if (${module_succeded})
-		add_library ( ${module_name} SHARED ${source_files} ${header_files} )
 		eval_cmakelists (${module_path})
+		add_library ( ${module_name} SHARED ${${module_name}_source_files} ${${module_name}_header_files} )
 		add_module_deps (${module_name})
 	endif ()
 
@@ -110,8 +113,8 @@ macro (add_executable_module module_name module_path)
 	add_module ( ${module_name} ${module_path} ${ARGN})
 
 	if (${module_succeded})
-		add_executable ( ${module_name} ${source_files} ${header_files} )
 		eval_cmakelists (${module_path})
+		add_executable ( ${module_name} ${${module_name}_source_files} ${${module_name}_header_files} )
 		add_module_deps (${module_name})
 	endif ()
 
@@ -120,4 +123,14 @@ endmacro ()
 macro (add_module_dependencies module_name)
 	set ( module_deps_name "${module_name}_deps")
 	list (APPEND ${module_deps_name} ${ARGN})
+endmacro ()
+
+macro (add_module_header_files module_name)
+	set ( module_include_files_name "${module_name}_include_files")
+	list (APPEND ${module_include_files_name} ${ARGN})
+endmacro ()
+
+macro (add_module_source_files module_name)
+	set ( module_source_files_name "${module_name}_source_files")
+	list (APPEND ${module_source_files_name} ${ARGN})
 endmacro ()
